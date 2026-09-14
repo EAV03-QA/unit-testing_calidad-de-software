@@ -135,4 +135,15 @@ public class CartServiceTest {
         );
         assertNotNull(exception);
     }
+    @Test 
+    void removeItem_ValidItemId_DeletesItem() {
+        // Arrange
+        Long itemId = 1L;
+
+        // Act
+        cartService.removeItem(itemId);
+
+        // Assert
+        verify(cartItemRepository).deleteById(itemId);
+    }
 }
