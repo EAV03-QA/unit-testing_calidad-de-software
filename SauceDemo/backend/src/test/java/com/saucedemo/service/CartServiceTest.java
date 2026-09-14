@@ -125,4 +125,14 @@ public class CartServiceTest {
         assertEquals(3, result.getQuantity());
         verify(cartItemRepository).save(any(CartItem.class));
     }
+    @Test 
+    void updateQuantity_ProductNotInCart_ThrowsException() {
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Throwable exception = assertThrows(
+            NoSuchElementException.class, 
+            () -> cartService.updateQuantity(1L, 3)
+        );
+        assertNotNull(exception);
+    }
 }
