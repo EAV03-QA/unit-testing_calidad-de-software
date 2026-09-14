@@ -54,4 +54,53 @@ public class ProductServiceTest {
         
         verify(productRepository, times(1)).findById(productId);
     }
+
+    @Test
+    void getAllProducts_ReturnListOfProducts() {
+        // Arrange
+        Product product1 = new Product(
+                "PROD-002",
+                "iPhone 18",
+                "Chip potente y carga rápida",
+                " chip A20 Pro, 64GB de almacenamiento, cámara de 108MP",
+                5000.00,
+                "https://iphone.jpg"
+        );
+        product1.setId(1L);
+
+        Product product2 = new Product(
+                "PROD-003",
+                "Mouse Inalámbrico",
+                "Mouse ergonómico",
+                "Batería recargable, RGB",
+                50.00,
+                "https://mouse.jpg"
+        );
+        product2.setId(2L);
+
+        List<Product> expectedProducts = Arrays.asList(product1, product2);
+
+        when(productRepository.findAll()).thenReturn(expectedProducts);
+
+        // Act
+        List<Product> actualProducts = productService.getAllProducts();
+
+        // Assert
+        assertNotNull(actualProducts);
+        assertEquals(2, actualProducts.size());
+
+        
+        assertEquals(1L, actualProducts.get(0).getId());
+        assertEquals("PROD-002", actualProducts.get(0).getCode());
+        assertEquals("iPhone 18", actualProducts.get(0).getName());
+        assertEquals(5000.00, actualProducts.get(0).getPrice());
+
+        
+        assertEquals(2L, actualProducts.get(1).getId());
+        assertEquals("PROD-003", actualProducts.get(1).getCode());
+        assertEquals("Mouse Inalámbrico", actualProducts.get(1).getName());
+        assertEquals(50.00, actualProducts.get(1).getPrice());
+
+        verify(productRepository, times(1)).findAll();
+    }
 }
