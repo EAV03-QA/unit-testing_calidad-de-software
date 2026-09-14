@@ -103,4 +103,19 @@ public class ProductServiceTest {
 
         verify(productRepository, times(1)).findAll();
     }
+
+    @Test
+    void getProductById_WhenIdDoesNotExist_ShouldReturnEmptyOptional() {
+        // Arrange
+        Long nonExistentId = 3L;
+        
+        when(productRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Product> actualProduct = productService.getProductById(nonExistentId);
+
+        // Assert
+        assertTrue(actualProduct.isEmpty()); 
+        verify(productRepository, times(1)).findById(nonExistentId);
+    }
 }
