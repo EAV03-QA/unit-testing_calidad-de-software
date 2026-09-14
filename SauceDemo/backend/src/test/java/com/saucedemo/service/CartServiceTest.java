@@ -4,6 +4,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,5 +44,14 @@ public class CartServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(cartItems, result);
+    }
+
+    @Test
+    void getCart_ProductDoesNotExist_returnEmptyList() {
+        when(cartItemRepository.findBySessionId("session2")).thenReturn(List.of());
+        
+        List<CartItem> result = cartService.getCart("session2");
+
+        assertTrue(result.isEmpty());
     }
 }
