@@ -1,14 +1,17 @@
 package com.saucedemo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -48,10 +51,28 @@ public class CartServiceTest {
 
     @Test
     void getCart_ProductDoesNotExist_returnEmptyList() {
-        when(cartItemRepository.findBySessionId("session2")).thenReturn(List.of());
+        when(cartItemRepository.findBySessionId("session1")).thenReturn(List.of());
         
-        List<CartItem> result = cartService.getCart("session2");
+        List<CartItem> result = cartService.getCart("session1");
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test 
+    void addToCard_ProductExists_ReturnsCartItem() {
+        Long productId = 1L;
+        var product = new Product("code1", "Product 1", "Description 1", 10.0, "image1.jpg");
+        product.setId(productId);
+        var cartItem = new CartItem("session1", product, 1);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(cartItemRepository.findBySessionIdAndProductId("session1", 1L)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.save(cartItem)).thenReturn(cartItem);
+
+        CartItem result = cartService.addToCart("session1", product.getId(), 1);
+
+        assertNotNull(result);
+        assertEquals(2, result.getQuantity());
+        verify(cartItemRepository).save(cartItem);
     }
 }
