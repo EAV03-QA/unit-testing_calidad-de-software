@@ -108,4 +108,21 @@ public class CartServiceTest {
         );
         assertNotNull(exception);
     }
+
+    @Test 
+    void updateQuantity_ProductInCart_ReturnsUpdatedCartItem() {
+        Long itemId = 1L;
+        var product = new Product("code1", "Product1", "Description1", 10.0, "image1.jpg");
+        var cartItem = new CartItem("session1", product, 1);
+        cartItem.setId(itemId);
+
+        when(cartItemRepository.findById(itemId)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.save(any(CartItem.class))).thenReturn(cartItem);
+
+        CartItem result = cartService.updateQuantity(itemId, 3);
+
+        assertNotNull(result);
+        assertEquals(3, result.getQuantity());
+        verify(cartItemRepository).save(any(CartItem.class));
+    }
 }
