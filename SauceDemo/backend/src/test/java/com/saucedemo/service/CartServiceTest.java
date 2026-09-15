@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +23,7 @@ import com.saucedemo.model.CartItem;
 import com.saucedemo.model.Product;
 import com.saucedemo.repository.CartItemRepository;
 import com.saucedemo.repository.ProductRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 @ExtendWith(MockitoExtension.class)
 public class CartServiceTest {
@@ -135,7 +137,7 @@ public class CartServiceTest {
         );
         assertNotNull(exception);
     }
-    @Test 
+    @Test
     void removeItem_ValidItemId_DeletesItem() {
         // Arrange
         Long itemId = 1L;
@@ -145,5 +147,42 @@ public class CartServiceTest {
 
         // Assert
         verify(cartItemRepository).deleteById(itemId);
+    }
+
+    @Test
+    void removeItem_ItemNoExiste_PropagaExcepcion() {
+        // Arrange: el repositorio lanza EmptyResultDataAccessException cuando el id no existe,
+        // ya que el servicio no captura ese error y lo deja propagar tal cual
+        Long itemId = 99L;
+        doThrow(new EmptyResultDataAccessException(1)).when(cartItemRepository).deleteById(itemId);
+
+        // Act & Assert
+        assertThrows(
+            EmptyResultDataAccessException.class,
+            () -> cartService.removeItem(itemId)
+        );
+        verify(cartItemRepository).deleteById(itemId);
+    }
+
+    @Test
+    void updateQuantity_CantidadInvalida_ComportamientoActual() {
+        // Arrange: el servicio no valida la cantidad, así que documentamos el comportamiento
+        // actual al recibir un valor cero o negativo (no se lanza ninguna excepcion de negocio)
+        Long itemId = 1L;
+        var product = new Product("code1", "Product1", "Description1", 10.0, "image1.jpg");
+        var cartItem = new CartItem("session1", product, 1);
+        cartItem.setId(itemId);
+        Integer cantidadInvalida = -3;
+
+        when(cartItemRepository.findById(itemId)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.save(any(CartItem.class))).thenReturn(cartItem);
+
+        // Act
+        CartItem result = cartService.updateQuantity(itemId, cantidadInvalida);
+
+        // Assert: la cantidad negativa se guarda sin validacion, evidenciando el hueco de negocio
+        assertNotNull(result);
+        assertEquals(cantidadInvalida, result.getQuantity());
+        verify(cartItemRepository).save(cartItem);
     }
 }
