@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -145,5 +146,17 @@ public class ProductServiceTest {
             () -> productService.getAllProducts()
         );
         verify(productRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllProducts_RepositorioVacio_RetornaListaVacia() {
+        // Arrange: el repositorio no tiene productos registrados
+        when(productRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Product> resultado = productService.getAllProducts();
+
+        // Assert
+        assertTrue(resultado.isEmpty());
     }
 }
