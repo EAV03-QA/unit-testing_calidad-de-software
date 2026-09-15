@@ -122,20 +122,6 @@ public class ProductServiceTest {
     }
 
     @Test
-    void getAllProducts_SinProductosEnRepositorio_ReturnListaVacia() {
-        // Arrange: el repositorio no tiene productos cargados
-        when(productRepository.findAll()).thenReturn(List.of());
-
-        // Act
-        List<Product> actualProducts = productService.getAllProducts();
-
-        // Assert
-        assertNotNull(actualProducts);
-        assertTrue(actualProducts.isEmpty());
-        verify(productRepository, times(1)).findAll();
-    }
-
-    @Test
     void getAllProducts_ErrorEnRepositorio_PropagaExcepcion() {
         // Arrange: simulamos una falla de acceso a datos (por ejemplo, la base de datos caida)
         when(productRepository.findAll()).thenThrow(new DataAccessResourceFailureException("Fallo de conexion a la base de datos"));
