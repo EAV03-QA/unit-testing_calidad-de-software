@@ -3,12 +3,14 @@ package com.saucedemo.service;
 import com.saucedemo.model.Product;
 import com.saucedemo.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -108,14 +110,39 @@ public class ProductServiceTest {
     void getProductById_WhenIdDoesNotExist_ShouldReturnEmptyOptional() {
         // Arrange
         Long nonExistentId = 3L;
-        
+
         when(productRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Act
         Optional<Product> actualProduct = productService.getProductById(nonExistentId);
 
         // Assert
-        assertTrue(actualProduct.isEmpty()); 
+        assertTrue(actualProduct.isEmpty());
         verify(productRepository, times(1)).findById(nonExistentId);
+    }
+
+    @Test
+    void getAllProducts_ErrorEnRepositorio_PropagaExcepcion() {
+        // Arrange: simulamos una falla de acceso a datos (por ejemplo, la base de datos caida)
+        when(productRepository.findAll()).thenThrow(new DataAccessResourceFailureException("Fallo de conexion a la base de datos"));
+
+        // Act & Assert: el servicio no maneja el error, por lo que debe propagarse tal cual
+        assertThrows(
+            DataAccessResourceFailureException.class,
+            () -> productService.getAllProducts()
+        );
+        verify(productRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllProducts_RepositorioVacio_RetornaListaVacia() {
+        // Arrange: el repositorio no tiene productos registrados
+        when(productRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Product> resultado = productService.getAllProducts();
+
+        // Assert
+        assertTrue(resultado.isEmpty());
     }
 }
